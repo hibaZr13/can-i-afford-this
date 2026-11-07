@@ -1,0 +1,4 @@
+recurring_id,name,flow,amount,category,frequency,start_date,end_date,total_payments,active,notes
+R001,Salary,inflow,2000.00,Salary,monthly,2026-01-01,,,true,
+R002,Streaming service,outflow,9.99,Subscriptions,monthly,2026-03-05,,,true,Cancel if unused
+R003,Laptop installments,outflow,100.00,Shopping,monthly,2026-11-06,,6,true,6 payments total

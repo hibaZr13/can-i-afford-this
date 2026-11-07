@@ -1,0 +1,8 @@
+transaction_id,date,amount,flow,category,counterparty,notes,recurring_id
+1,2026-11-01,2000.00,inflow,Salary,Employer,October pay,R001
+2,2026-11-02,25.50,outflow,Food,Supermarket,,
+3,2026-11-03,12.00,outflow,Transport,Bus ticket,,
+4,2026-11-04,45.00,outflow,Shopping,Clothes store,Birthday gift for Sam,
+5,2026-11-05,9.99,outflow,Subscriptions,Streaming service,,R002
+6,2026-11-06,100.00,outflow,Shopping,Laptop store,Installment 1 of 6,R003
+7,2026-11-07,60.00,inflow,Other income,Friend,Paid back for dinner,

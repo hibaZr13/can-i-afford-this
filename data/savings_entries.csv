@@ -1,0 +1,4 @@
+entry_id,date,goal_id,amount,notes
+1,2026-11-01,G001,200.00,Monthly transfer
+2,2026-11-01,G002,50.00,
+3,2026-11-05,G002,-20.00,Withdrew for deposit
