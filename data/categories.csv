@@ -1,13 +1,2 @@
 name,flow
 Food,outflow
-Transport,outflow
-Shopping,outflow
-Bills,outflow
-Subscriptions,outflow
-Health,outflow
-Entertainment,outflow
-Other,outflow
-Salary,inflow
-Gift,inflow
-Refund,inflow
-Other income,inflow

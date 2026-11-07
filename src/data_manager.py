@@ -22,12 +22,21 @@ def load_csv(path, columns):
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors="coerce")
 
+
     # Turn number columns into numbers (bad or empty values become NaN)
     for col in NUMBER_COLUMNS:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
+    # A text column that is empty everywhere gets read as float (all NaN).
+    # Turn it into a normal "object" column so it can hold text later.
+    for col in df.columns:
+        if col not in DATE_COLUMNS + NUMBER_COLUMNS and df[col].dtype == "float64":
+            df[col] = df[col].astype(object)
+
     return df
+
+
 
 
 def save_csv(df, path):

@@ -1,0 +1,61 @@
+import pytest
+import pandas as pd
+from src import config
+from src.recurring import *
+from src.recurring import _due_dates
+from src.transactions import get_transactions
+
+
+@pytest.fixture(autouse=True)
+def temp_data(tmp_path, monkeypatch):
+    # Point the files at a temp folder; empty files get created on first load
+    for name in ["RECURRING_CSV", "TRANSACTIONS_CSV", "CATEGORIES_CSV"]:
+        monkeypatch.setattr(config, name, tmp_path / f"{name}.csv")
+    pd.DataFrame({"name": ["Shopping", "Subscriptions"], "flow": ["outflow", "outflow"]}) \
+        .to_csv(config.CATEGORIES_CSV, index=False)
+
+
+def test_month_end_dates():
+    rule = pd.Series({"start_date": pd.Timestamp("2026-01-31"), "frequency": "monthly",
+                      "end_date": pd.NaT, "total_payments": float("nan")})
+    dates = _due_dates(rule, pd.Timestamp("2026-03-31"))
+    assert [d.strftime("%Y-%m-%d") for d in dates] == ["2026-01-31", "2026-02-28", "2026-03-31"]
+
+
+def test_instalments_stop_and_no_duplicates():
+    rid = add_recurring("Laptop", "outflow", 100, "Shopping", "monthly",
+                        "2026-01-01", total_payments=3)
+    assert generate_due_transactions("2027-01-01") == 3   # stops at 3, not 13
+    assert generate_due_transactions("2027-01-01") == 0   # second run adds nothing
+    assert len(get_transactions()) == 3
+    assert get_instalment_progress(rid) == {
+        "payments_made": 3, "payments_left": 0, "amount_paid": 300.0, "amount_remaining": 0.0}
+
+
+def test_since_skips_old_dates():
+    add_recurring("Netflix", "outflow", 10, "Subscriptions", "monthly", "2026-01-05")
+    assert generate_due_transactions("2026-03-31", since="2026-03-01") == 1
+
+
+def test_upcoming_is_a_forecast_only():
+    add_recurring("Netflix", "outflow", 10, "Subscriptions", "monthly", "2026-11-05")
+    up = get_upcoming_payments(30, today="2026-11-10")
+    assert [d.strftime("%Y-%m-%d") for d in up["date"]] == ["2026-12-05"]
+    assert get_transactions().empty                        # nothing was saved
+
+
+def test_cancel_stops_generation_but_keeps_history():
+    rid = add_recurring("Netflix", "outflow", 10, "Subscriptions", "monthly", "2026-01-05")
+    generate_due_transactions("2026-02-28")
+    cancel_recurring(rid)
+    assert generate_due_transactions("2026-06-30") == 0
+    assert len(get_transactions()) == 2
+
+
+def test_rejects_bad_input():
+    with pytest.raises(ValueError):
+        add_recurring("X", "outflow", 10, "Subscriptions", "daily", "2026-01-01")
+    with pytest.raises(ValueError):
+        add_recurring("X", "outflow", 10, "Subscriptions", "monthly", "2026-02-01", end_date="2026-01-01")
+    with pytest.raises(ValueError):
+        add_recurring("X", "outflow", 10, "Subscriptions", "monthly", "2026-01-01", total_payments=2.5)
